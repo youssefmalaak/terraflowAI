@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TerraFlow | Smart Farm Digital Twin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">T<span>✳</span></div><div><b>TERRAFLOW</b><small>AGRICULTURE SYSTEMS</small></div></div>
+    <div class="side-label">WORKSPACE</div>
+    <button class="nav-item active"><span>◈</span> Farm overview <i>01</i></button>
+    <button class="nav-item" id="navSearch"><span>⌁</span> Path intelligence <i>02</i></button>
+    <button class="nav-item" id="navScenarios"><span>◉</span> Scenario lab <i>03</i></button>
+    <div class="side-bottom">
+      <div class="system-card"><div class="live-dot"></div><b>Simulation online</b><small>LOCAL DIGITAL TWIN</small><div class="system-line"><span>Engine status</span><strong>READY</strong></div></div>
+      <div class="user-chip"><div class="avatar">TF</div><div><b>Farm operator</b><small>Administrator</small></div><span>•••</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><div class="eyebrow">CONTROL CENTER <span>/</span> NORTH FARM</div><h1>Farm overview</h1></div>
+      <div class="top-actions"><div class="clock"><span class="live-dot"></span> LIVE SIMULATION <b id="clock">08:42:16</b></div><button class="icon-btn" id="resetBtn" title="Reset simulation">↺</button><button class="operator"><span class="avatar">OP</span><span>Operator</span><b>⌄</b></button></div>
+    </header>
+
+    <section class="metric-grid">
+      <article class="metric"><div class="metric-head">TOTAL WATER RESERVE <span>◌</span></div><div class="metric-value"><strong id="waterMetric">82</strong><small>%</small></div><div class="metric-foot"><div class="mini-track"><i id="waterBar" style="width:82%"></i></div><span id="waterLitres">8,200 / 10,000 L</span></div></article>
+      <article class="metric"><div class="metric-head">AVERAGE SOIL MOISTURE <span>⌁</span></div><div class="metric-value"><strong id="moistureMetric">46</strong><small>%</small></div><div class="metric-foot"><div class="mini-track"><i id="moistureBar" style="width:46%"></i></div><span>Target 65%</span></div></article>
+      <article class="metric"><div class="metric-head">ACTIVE IRRIGATION <span>◉</span></div><div class="metric-value"><strong id="activeMetric">00</strong><small>/ <span id="activeLimit">02</span></small></div><div class="metric-foot"><span class="status-pill good">● SYSTEM READY</span><span>priority-based · max 2 active</span></div></article>
+      <article class="metric"><div class="metric-head">AMBIENT CONDITIONS <span>☼</span></div><div class="metric-value"><strong id="tempMetric">29</strong><small>°C</small></div><div class="metric-foot"><span class="weather-icon">☀</span><span id="weatherText">Clear sky · 34% humidity</span></div></article>
+    </section>
+
+    <section class="workspace-grid">
+      <div class="scene-panel">
+        <div class="panel-top"><div><div class="eyebrow">LIVE ENVIRONMENT</div><h2>North farm · 3D twin</h2></div><div class="scene-tools"><span class="scene-live"><i></i> SIMULATED LIVE</span><button id="viewReset" class="small-btn">⌖ Reset view</button></div></div>
+        <div class="scene-wrap" id="sceneWrap">
+          <div id="scene"></div>
+          <div class="scene-overlay top-left"><span class="overlay-label">FARM ZONE</span><b>NORTH / BLOCK 04</b><small>12.8 hectares · 4 irrigation sectors</small></div>
+          <div class="scene-overlay bottom-left"><span class="legend"><i class="legend-water"></i> Active water flow</span><span class="legend"><i class="legend-dry"></i> Needs irrigation</span><span class="legend"><i class="legend-good"></i> Moisture optimal</span></div>
+          <div class="scene-overlay bottom-right"><span class="hint">DRAG TO ORBIT · SCROLL TO ZOOM</span></div>
+          <div class="field-tooltip" id="fieldTooltip"></div>
+          <div class="scene-loading" id="sceneLoading"><div class="loader"></div><span>Building farm environment…</span></div>
+        </div>
+        <div class="scene-footer"><div><span class="footer-dot"></span> 3D environment loaded locally</div><div>Terrain model <b>v1.4</b> <span class="footer-sep">|</span> Scale 1:450</div></div>
+      </div>
+
+      <div class="control-panel">
+        <div class="panel-top"><div><div class="eyebrow">OPERATIONS</div><h2>Farm controls</h2></div><span class="status-pill good" id="pumpStatus">● PUMP ONLINE</span></div>
+        <div class="control-block">
+          <div class="control-row"><div><b>Main water pump</b><small>Primary distribution unit · P-01</small></div><label class="switch"><input type="checkbox" id="pumpToggle" checked><span></span></label></div>
+          <div class="control-row"><div><b>Automatic irrigation</b><small>Priority queue · moisture deficit · 2 active zones max</small></div><label class="switch"><input type="checkbox" id="autoToggle" checked><span></span></label></div>
+        </div>
+        <div class="control-block"><div class="block-title">ENVIRONMENTAL CONDITIONS <span>SIMULATED INPUTS</span></div>
+          <div class="slider-row"><label>Ambient temperature <b id="tempValue">29°C</b></label><input id="tempSlider" type="range" min="10" max="45" value="29"></div>
+          <div class="slider-row"><label>Evaporation intensity <b id="evapValue">34%</b></label><input id="evapSlider" type="range" min="0" max="100" value="34"></div>
+          <div class="slider-row"><label>Simulation speed <b id="speedValue">1×</b></label><input id="speedSlider" type="range" min="1" max="5" value="1"></div>
+        </div>
+        <div class="control-block scenario-block"><div class="block-title">QUICK SCENARIOS <span>TEST CONDITIONS</span></div>
+          <div class="scenario-buttons"><button data-scenario="normal" class="scenario active">Normal<br><small>Baseline</small></button><button data-scenario="drought" class="scenario">Drought<br><small>High heat</small></button><button data-scenario="blocked" class="scenario">Blocked<br><small>Pipe fault</small></button><button data-scenario="leak" class="scenario">Leak<br><small>Pressure loss</small></button></div>
+        </div>
+        <div class="control-bottom"><button id="runCycle" class="primary-btn"><span>▶</span> Run irrigation cycle</button><button id="pauseBtn" class="secondary-btn">Ⅱ Pause simulation</button></div>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <div class="fields-panel">
+        <div class="panel-top"><div><div class="eyebrow">CROP MONITORING</div><h2>Field conditions</h2></div><span class="muted-small">Select a field to inspect</span></div>
+        <div class="field-cards" id="fieldCards">
+          <button class="field-card selected" data-field="FIELD_A"><div class="field-thumb crop-a">▥</div><div class="field-info"><b>Field A <small>Wheat</small></b><span class="field-moisture">38% moisture</span><div class="mini-track"><i style="width:38%"></i></div></div><span class="field-state warn">DRY</span></button>
+          <button class="field-card" data-field="FIELD_B"><div class="field-thumb crop-b">▥</div><div class="field-info"><b>Field B <small>Corn</small></b><span class="field-moisture">54% moisture</span><div class="mini-track"><i style="width:54%"></i></div></div><span class="field-state good">GOOD</span></button>
+          <button class="field-card" data-field="FIELD_C"><div class="field-thumb crop-c">▥</div><div class="field-info"><b>Field C <small>Tomato</small></b><span class="field-moisture">62% moisture</span><div class="mini-track"><i style="width:62%"></i></div></div><span class="field-state good">GOOD</span></button>
+          <button class="field-card" data-field="FIELD_D"><div class="field-thumb crop-d">▥</div><div class="field-info"><b>Field D <small>Orchard</small></b><span class="field-moisture">29% moisture</span><div class="mini-track"><i style="width:29%"></i></div></div><span class="field-state warn">DRY</span></button>
+        </div>
+      </div>
+      <div class="activity-panel"><div class="panel-top"><div><div class="eyebrow">SYSTEM EVENTS</div><h2>Activity log</h2></div><span class="muted-small" id="eventCount">04 EVENTS</span></div><div class="event-list" id="eventList"><div class="event"><i class="event-mark green">✓</i><div><b>Digital twin initialized</b><small>All sectors connected · just now</small></div></div><div class="event"><i class="event-mark blue">⌁</i><div><b>Moisture scan completed</b><small>Field A and D below target · 1 min ago</small></div></div><div class="event"><i class="event-mark amber">↗</i><div><b>Automatic schedule active</b><small>2 sectors queued · 2 min ago</small></div></div></div></div>
+    </section>
+
+    <section class="analytics-grid">
+      <article class="analytics-panel">
+        <div class="panel-top"><div><div class="eyebrow">FIELD INTELLIGENCE</div><h2>Moisture analytics</h2></div><span class="muted-small">Live simulated readings</span></div>
+        <div class="moisture-chart" id="moistureChart">
+          <div class="moisture-row" data-analytics-field="FIELD_A"><span>Field A</span><div class="chart-track"><i style="width:38%"></i></div><b>38%</b></div>
+          <div class="moisture-row" data-analytics-field="FIELD_B"><span>Field B</span><div class="chart-track"><i style="width:54%"></i></div><b>54%</b></div>
+          <div class="moisture-row" data-analytics-field="FIELD_C"><span>Field C</span><div class="chart-track"><i style="width:62%"></i></div><b>62%</b></div>
+          <div class="moisture-row" data-analytics-field="FIELD_D"><span>Field D</span><div class="chart-track"><i style="width:29%"></i></div><b>29%</b></div>
+        </div>
+        <div class="analytics-note"><span class="note-dot"></span> Target moisture varies by crop (65–70%). Values are simulated.</div>
+      </article>
+      <article class="analytics-panel">
+        <div class="panel-top"><div><div class="eyebrow">BONUS · SEARCH EVALUATION</div><h2>A* performance monitor</h2></div><span class="status-pill good" id="searchHealth">● READY</span></div>
+        <div class="search-kpis">
+          <div><small>LAST EXECUTION</small><b id="lastExec">—</b><span>milliseconds</span></div>
+          <div><small>NODES EXPLORED</small><b id="lastExplored">—</b><span>visited by A*</span></div>
+          <div><small>PATH COST</small><b id="lastCost">—</b><span>physical distance units</span></div>
+          <div><small>GRAPH SIZE</small><b id="graphSize">11 / 13</b><span>nodes / edges</span></div>
+        </div>
+        <div class="search-history-head"><b>Recent search activity</b><span id="searchCount">0 searches</span></div>
+        <div class="search-history" id="searchHistory"><div class="history-empty">Run A* to populate the performance history.</div></div>
+      </article>
+    </section>
+
+    <footer class="footer"><span>© 2026 TERRAFLOW SYSTEMS · DIGITAL TWIN SIMULATION</span><span>ALL VALUES ARE SIMULATED · NO PHYSICAL HARDWARE CONNECTED</span></footer>
+  </main>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<aside class="search-drawer" id="searchDrawer">
+  <div class="drawer-head"><div><div class="eyebrow">AI SEARCH MODULE</div><h2>Path intelligence</h2></div><button id="closeDrawer">×</button></div>
+  <p class="drawer-intro">Find the minimum-distance route from the reservoir to a selected irrigation sector using A* Search.</p>
+  <label class="form-label">DESTINATION FIELD</label><select id="goalSelect"><option value="FIELD_A">Field A · Wheat</option><option value="FIELD_B">Field B · Corn</option><option value="FIELD_C">Field C · Tomato</option><option value="FIELD_D">Field D · Orchard</option></select>
+  <div class="algo-note"><b>A* · A-Star Search</b><span>Weighted graph · pipe cost is its physical length; straight-line distance is the heuristic</span></div>
+  <button class="primary-btn full" id="findPath">⌁ Find optimal path</button>
+  <div id="searchResult" class="search-result empty">Run a search to see explored nodes, A* scores and the final route.</div>
+  <div class="drawer-actions"><button id="clearPath" class="secondary-btn">Clear highlighted path</button></div>
+</aside>
+
+<div class="toast" id="toast"></div>
+<script type="module" src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
